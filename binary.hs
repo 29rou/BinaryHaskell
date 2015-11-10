@@ -1,24 +1,19 @@
-import System.IO as S
+import System.IO
 import Numeric
-import Data.ByteString as B
+import Data.ByteString.Lazy as B (ByteString,  hGetContents, unpack) 
+import GHC.Word (Word8)
 
-printBinary :: ByteString -> IO () 
-printBinary x | B.length x == 1  = do S.putStr(toHex(x))
-              | otherwise  = do 
-                S.putStr(toHex(x))
-                printBinary(B.tail x)
-            where toHex :: ByteString -> String
-                  toHex x = showHex (B.head x) ""
-
+toBinaryList :: [Word8] -> [String] -> [String]
+toBinaryList x y
+    | length x == 1 = y ++ [hex x]
+    | otherwise = (toBinaryList (tail x) (y ++ [hex x]))
+    where hex :: [Word8] -> String
+          hex x = showHex (head (x)) ""
 main :: IO ()
 main = do
-    Prelude.putStr "Plese input filepath:"
+    putStr "Plese input filepath:"
     hFlush stdout
-    filepath <- S.getLine
+    filepath <- getLine
     targetFile <- openFile filepath ReadMode
     binaryData <- B.hGetContents targetFile
-    printBinary binaryData
-    let textData = B.unpack binaryData
-        hex = showHex (Prelude.head textData) ""
-        hexlist =[hex]
-    print (hexlist)
+    print(toBinaryList (B.unpack binaryData) [""] )
