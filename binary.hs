@@ -16,4 +16,4 @@ main = do
     filepath <- getLine
     targetFile <- openFile filepath ReadMode
     binaryData <- B.hGetContents targetFile
-    print(toBinaryList (B.unpack binaryData) [""] )
+    putStr (concat (toBinaryList (B.unpack binaryData) [] ))
