@@ -1,6 +1,6 @@
 import System.IO
 import Numeric (showHex)
-import Data.ByteString.Lazy as B (ByteString,  hGetContents, unpack) 
+import Data.ByteString as B (ByteString,  hGetContents, unpack) 
 import GHC.Word (Word8)
 import Data.List
 import Data.Char
@@ -23,6 +23,9 @@ markerFilter _ [] = []
 markerFilter x (y:ys) = if isPrefixOf x y then y :markerFilter x ys 
                         else markerFilter x ys
                              
+byteLoder :: Int -> String -> String
+byteLoder x y = [y !! (x*2) ] ++ [y !! ((x*2)+1)]
+
 main :: IO ()
 main = do
     targetFile <- openFile "test.jpg" ReadMode
@@ -39,13 +42,13 @@ main = do
     --print huffmanTable
     putStr "width:"
     let metaData' = concat metaData
-    let imgwidth = [(metaData' !! 10)] ++ [(metaData' !! 11)] ++ [(metaData' !! 12)] ++ [(metaData' !! 13)]
+    let imgwidth = byteLoder 5 metaData' ++ byteLoder 6 metaData'
     print(hex2dec imgwidth)
     putStr "length:"
-    let imglength = [(metaData' !! 14)] ++ [(metaData' !! 15)] ++ [(metaData' !! 16)] ++ [(metaData' !! 17)]
+    let imglength = byteLoder 7 metaData' ++ byteLoder 8 metaData'
     print(hex2dec imglength)
     --putStrLn $ concat $ map (++['\n']) (take 9 markerDivList)
-    saveFile <- openFile "test.txt" WriteMode
-    hPutStr saveFile (concat$markerDiv binaryList)
+    --saveFile <- openFile "test.txt" WriteMode
+    --hPutStr saveFile (concat$markerDiv binaryList)
     --print binaryList
 
