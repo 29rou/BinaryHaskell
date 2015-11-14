@@ -50,12 +50,12 @@ byteGetLoop (x1) = []
 readHuffmanTable :: Int -> Int -> [Int] -> [[[Int]]]
 readHuffmanTable 0 n (0:xs) = readHuffmanTable 0 (n+1) xs
 readHuffmanTable bits n (0:xs) = readHuffmanTable 0 (n+1) xs
-readHuffmanTable 0 n (x:xs) = (bitMaker 0 n x) : readHuffmanTable (shiftL x (n-1)) (n+1) xs
+readHuffmanTable 0 n (x:xs) = map ((replicate (n-1) 0) ++) (bitMaker 0 n x) : readHuffmanTable (shiftL x (n-1)) (n+1) xs
 readHuffmanTable bits n (x:xs) = (bitMaker (bits) n x) : readHuffmanTable (shiftL (bits+x) 1) (n+1) xs
 readHuffmanTable _ _ x = []
 
 bitMaker :: Int -> Int-> Int -> [[Int]]
-bitMaker 0 n y = toBit 0 : bitMaker (shiftL 1 (n-1)) n (y-1)
+bitMaker 0 n y = ( toBit 0) : bitMaker (1) n (y-1)
 bitMaker x n 0 = []
 bitMaker x n y = toBit x : bitMaker (x+1) n (y-1)
 
@@ -71,7 +71,7 @@ main = do
     --print (length (head huffmanTable))
     let test = (huffmanTable)
     print (take 16 (drop 3 (head huffmanTable)))
-    print (readHuffmanTable 0 1 (take 16 (drop 3 (head huffmanTable))))
+    print (concat $ readHuffmanTable 0 1 (take 16 (drop 3 (head huffmanTable))))
     saveFile <- openFile "test2.txt" WriteMode
     hPutStrLn saveFile (show (head test))
     hPutStrLn saveFile (show (test !! 1))
