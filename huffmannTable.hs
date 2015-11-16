@@ -12,12 +12,10 @@ hex2dec x = 0
 
 toBit:: Int -> String
 toBit x = reverse (toBit' x)
-
-toBit' :: Int -> String
-toBit' 1 = ['1']
-toBit' 0 = ['0']
-toBit' (x) = intToDigit (mod x 2) : toBit' (div x 2) 
-
+    where toBit' :: Int -> String
+          toBit' 1 = ['1']
+          toBit' 0 = ['0']
+          toBit' (x) = intToDigit (mod x 2) : toBit' (div x 2) 
 
 binaryListMaker :: ByteString -> [String]
 binaryListMaker x = tail $ lines $ concat $ markerDiv $ map hex (B.unpack x)
@@ -40,30 +38,35 @@ byteLoder x y = [y !! (x*2) ] ++ [y !! ((x*2)+1)]
 convertHuffmanTable :: [String] -> [[Int]]
 convertHuffmanTable (x:xs) = map hex2dec (analyzeHuffmanTable x) : convertHuffmanTable xs
     where analyzeHuffmanTable :: String -> [String]
-          analyzeHuffmanTable x = [(byteLoder 2 x)++(byteLoder 3 x)]++[[(x !! 8)]]++[[(x !! 9)]]++(byteGetLoop (digitToInt(x !! 8)) (drop 10 x))
+          analyzeHuffmanTable x = [lh]++[[tcn]]++[[thn]]++ huffdata
+          lh = (byteLoder 2 x)++(byteLoder 3 x)
+          tcn = (x !! 8)
+          thn = (x !! 9)
+          huffdata = byteGetLoop (digitToInt tcn) (drop 10 x)
 convertHuffmanTable x = []
 
 byteGetLoop :: Int -> String -> [String]
 byteGetLoop 0 (x1:x2:xs) = ([x1] ++ [x2]) : byteGetLoop 0 xs   
 byteGetLoop 0 x = []
-byteGetLoop 16 (x1:x2:xs) =  ([x1] ++ [x2]) : (bitGetLoop xs)
+byteGetLoop 16 (x1:x2:xs) =  ([x1] ++ [x2]) : bitGetLoop xs
+    where bitGetLoop :: String -> [String]
+          bitGetLoop (x:xs) = [x] : bitGetLoop xs   
+          bitGetLoop x = []
 byteGetLoop n (x1:x2:xs) = ([x1] ++ [x2]) : byteGetLoop (n+1) xs
 
-bitGetLoop :: String -> [String]
-bitGetLoop (x:xs) = [x] : bitGetLoop xs   
-bitGetLoop x = []
+readHuffmanTable' :: Int -> Int -> [Int] -> [[String]]
+readHuffmanTable' 0 n (0:xs) = readHuffmanTable' 0 (n+1) xs
+readHuffmanTable' bits n (0:xs) = readHuffmanTable' (shiftL bits 1) (n+1) xs
+readHuffmanTable' 0 n (x:xs) = bitMaker 0 n x : readHuffmanTable' (shiftL x (n-1)) (n+1) xs
+readHuffmanTable' bits n (x:xs) = bitMaker bits n x : readHuffmanTable' (shiftL (bits+x) 1) (n+1) xs
+readHuffmanTable' _ _ x = []
 
-readHuffmanTable :: Int -> Int -> [Int] -> [[String]]
-readHuffmanTable 0 n (0:xs) = readHuffmanTable 0 (n+1) xs
-readHuffmanTable bits n (0:xs) = readHuffmanTable (shiftL (bits) 1) (n+1) xs
-readHuffmanTable 0 n (x:xs) = (bitMaker 0 n x) : readHuffmanTable (shiftL x (n-1)) (n+1) xs
-readHuffmanTable bits n (x:xs) = (bitMaker (bits) n x) : readHuffmanTable (shiftL (bits+x) 1) (n+1) xs
-readHuffmanTable _ _ x = []
-
-readHuffmanTable' :: Int -> [Int] -> [(String,Int,Int)]
-readHuffmanTable' 0  z = zip3 (concat $ readHuffmanTable 0 1 (take 16 (drop 3 z)))  (drop 19 z) (cycle[0..0])
-readHuffmanTable' 1  z = zip3 (concat $ readHuffmanTable 0 1 (take 16 (drop 3 z)))  (takeOdd(drop 19 z)) (takeEven(drop 19 z))
-                         where takeOdd :: [Int] -> [Int]
+readHuffmanTable :: [Int] -> [(String,Int,Int)]
+readHuffmanTable z |(z !! 1) == 0 = zip3 huffmantable huffdata (cycle[0..0])
+                   |otherwise = zip3 huffmantable (takeOdd huffdata) (takeEven huffdata )
+                         where huffmantable = concat $ readHuffmanTable' 0 1 (take 16 huffdata)
+                               huffdata = drop 19 z
+                               takeOdd :: [Int] -> [Int]
                                takeOdd (x1:x2:xs) = x1 :takeOdd xs
                                takeOdd x = []
                                takeEven :: [Int] -> [Int]
@@ -90,13 +93,13 @@ main = do
     saveFile <- openFile "test3.txt" WriteMode
     --hPrint (take 16 (drop 3 (head huffmanTable)))
     --putStrLn  (show (head test))
-    --print  (readHuffmanTable' 0   (head huffmanTable))
+    --print  (readHuffmanTable (head huffmanTable))
     hPutStrLn saveFile (show (head test))
-    hPrint  saveFile (readHuffmanTable' 0   (head huffmanTable))
+    hPrint  saveFile (readHuffmanTable (head huffmanTable))
     hPutStrLn saveFile (show (test !! 1))
-    hPrint saveFile ( readHuffmanTable' 1  (huffmanTable!!1))
+    hPrint saveFile ( readHuffmanTable (huffmanTable!!1))
     hPutStrLn saveFile (show (test !! 2))
-    hPrint saveFile (readHuffmanTable' 0 (huffmanTable!!2))
+    hPrint saveFile (readHuffmanTable (huffmanTable!!2))
     hPutStrLn saveFile (show (test !! 3))
-    hPrint saveFile (readHuffmanTable' 1 (huffmanTable!!3))
+    hPrint saveFile (readHuffmanTable (huffmanTable!!3))
     hClose saveFile
