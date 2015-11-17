@@ -64,7 +64,7 @@ readHuffmanTable' _ _ x = []
 readHuffmanTable :: [Int] -> [(String,Int,Int)]
 readHuffmanTable z |(z !! 1) == 0 = zip3 huffmantable huffdata (cycle[0..0])
                    |otherwise = zip3 huffmantable (takeOdd huffdata) (takeEven huffdata )
-                         where huffmantable = concat $ readHuffmanTable' 0 1 (take 16 huffdata)
+                         where huffmantable = concat $ readHuffmanTable' 0 1 (take 16 (drop 3 z))
                                huffdata = drop 19 z
                                takeOdd :: [Int] -> [Int]
                                takeOdd (x1:x2:xs) = x1 :takeOdd xs
