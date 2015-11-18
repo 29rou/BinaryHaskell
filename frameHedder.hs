@@ -36,6 +36,22 @@ markerFilter x (y:ys) = if isPrefixOf x y then y :markerFilter x ys
                         else markerFilter x ys
 markerFilter _ y = []
 
+convertFrameHedder :: [String] -> [Int]
+convertFrameHedder y = map hex2dec analyzeFrameHedder
+    where x = concat y
+          analyzeFrameHedder = [lf] ++ [p] ++ [x'] ++[y'] ++ [nf] ++ component
+          lf = (byteLoder 2 x) ++ (byteLoder 3 x)
+          p = byteLoder 4 x
+          y' = (byteLoder 5 x) ++ (byteLoder 6 x)
+          x' = (byteLoder 7 x) ++ (byteLoder 8 x)
+          nf = byteLoder 9 x
+          nf' = hex2dec nf
+          component = componentReader nf' (drop 20 x)
+          componentReader :: Int -> String -> [String]
+          componentReader 0 _ = []
+          componentReader n x = [byteLoder 0 x] ++ [[x !! 2]] ++ [[x !! 3]] ++ (byteLoder 2 x): 
+            componentReader (n-1) (drop 6 x)
+
 convertHuffmanTable :: [String] -> [[Int]]
 convertHuffmanTable (x:xs) = map hex2dec analyzeHuffmanTable : convertHuffmanTable xs
     where analyzeHuffmanTable = [lh]++[[tcn]]++[[thn]]++ huffdata
@@ -43,16 +59,15 @@ convertHuffmanTable (x:xs) = map hex2dec analyzeHuffmanTable : convertHuffmanTab
           tcn = (x !! 8)
           thn = (x !! 9)
           huffdata = byteGetLoop (digitToInt tcn) (drop 10 x)
-convertHuffmanTable x = []
-
-byteGetLoop :: Int -> String -> [String]
-byteGetLoop 0 (x1:x2:xs) = ([x1] ++ [x2]) : byteGetLoop 0 xs   
-byteGetLoop 0 x = []
-byteGetLoop 16 (x1:x2:xs) =  ([x1] ++ [x2]) : bitGetLoop xs
-    where bitGetLoop :: String -> [String]
+          byteGetLoop :: Int -> String -> [String]
+          byteGetLoop 0 (x1:x2:xs) = ([x1] ++ [x2]) : byteGetLoop 0 xs   
+          byteGetLoop 0 x = []
+          byteGetLoop 16 (x1:x2:xs) =  ([x1] ++ [x2]) : bitGetLoop xs
+          byteGetLoop n (x1:x2:xs) = ([x1] ++ [x2]) : byteGetLoop (n+1) xs
+          bitGetLoop :: String -> [String]
           bitGetLoop (x:xs) = [x] : bitGetLoop xs   
           bitGetLoop x = []
-byteGetLoop n (x1:x2:xs) = ([x1] ++ [x2]) : byteGetLoop (n+1) xs
+convertHuffmanTable x = []
 
 readHuffmanTable :: [Int] -> [(String,Int,Int)]
 readHuffmanTable z |(z !! 1) == 0 = zip3 huffmantable huffdata (cycle[0..0])
@@ -94,30 +109,17 @@ convertScanHedder y = map hex2dec analyzeScanHedder
           ai = [(last !! 5)]
           componentReader:: Int -> String -> [String]
           componentReader 0 _ = []
-          componentReader n x = [(byteLoder 0 x)] ++ [[x !! 2]] ++ [x !! 3] : componentReader (n-1) (drop 4 x)
+          componentReader n x = [(byteLoder 0 x)] ++ [[x !! 2]] ++ [x !! 3] : 
+            componentReader (n-1) (drop 4 x)
 
 imgDataTobit:: String -> String
 imgDataTobit x = concat $ imgDataTobit' x
+    where imgDataTobit':: String -> [String]
+          imgDataTobit' (x:xs) = let bitData  = toBit $ hex2dec [x]
+                                 in concat ([replicate (4- length bitData) '0'] ++ [bitData]) : 
+                                 imgDataTobit' xs
+          imgDataTobit' x = []
 
-imgDataTobit':: String -> [String]
-imgDataTobit' (x:xs) = concat ([replicate (4- length bitData) '0'] ++ [bitData]) : imgDataTobit' xs
-    where bitData = toBit $ hex2dec [x]
-imgDataTobit' x = []
-
-convertFrameHedder :: [String] -> [Int]
-convertFrameHedder y = map hex2dec analyzeFrameHedder
-    where x = concat y
-          analyzeFrameHedder = [lf] ++ [p] ++ [x'] ++[y'] ++ [nf] ++ component
-          lf = (byteLoder 2 x) ++ (byteLoder 3 x)
-          p = byteLoder 4 x
-          y' = (byteLoder 5 x) ++ (byteLoder 6 x)
-          x' = (byteLoder 7 x) ++ (byteLoder 8 x)
-          nf = byteLoder 9 x
-          nf' = hex2dec nf
-          component = componentReader nf' (drop 20 x)
-          componentReader :: Int -> String -> [String]
-          componentReader 0 _ = []
-          componentReader n x = [byteLoder 0 x] ++ [[x !! 2]] ++ [[x !! 3]] ++ (byteLoder 2 x): componentReader (n-1) (drop 6 x)
 
 main :: IO ()
 main = do
