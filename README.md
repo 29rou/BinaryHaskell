@@ -1,5 +1,5 @@
 # BinaryHaskell
-JpegデコーダをHaskellで実装する計画。
+JpegデコーダをHaskellで実装する計画。秋休み期間中には絶対完成させるぞ!!
 ##Haskellでバイナリ操作の勉強。
 ###binary.hsはファイルをバイナリで読み込み16進法で表示する。
 ###imghedder.hsはjpgファイルの縦横のピクセル数を表示する。
