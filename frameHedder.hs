@@ -84,7 +84,7 @@ readHuffmanTable z |(z !! 1) == 0 = zip3 huffmantable huffdata (cycle[0..0])
 readHuffmanTable' :: Int -> Int -> [Int] -> [[String]]
 readHuffmanTable' 0 n (0:xs) = readHuffmanTable' 0 (n+1) xs
 readHuffmanTable' bits n (0:xs) = readHuffmanTable' (shiftL bits 1) (n+1) xs
-readHuffmanTable' 0 n (x:xs) = bitMaker 0 n x : readHuffmanTable' (shiftL x (n-1)) (n+1) xs
+readHuffmanTable' 0 n (x:xs) = bitMaker 0 n x : readHuffmanTable' (shiftL x 1) (n+1) xs
 readHuffmanTable' bits n (x:xs) = bitMaker bits n x : readHuffmanTable' (shiftL (bits+x) 1) (n+1) xs
 readHuffmanTable' _ _ x = []
 
