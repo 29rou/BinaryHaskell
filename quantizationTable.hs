@@ -146,16 +146,12 @@ main = do
         scanHedder = convertScanHedder scanHedder'
         imgData = drop ((head scanHedder)*2+2)  (concat scanHedder')
         huffmanTable = convertHuffmanTable $ markerFilter "ffc4" binaryList
-    print $ markerFilter "ffdb" binaryList
     print quantizationTable
     print (scanHedder)
     print frameHedder
-    --print imgData
     let test = (huffmanTable)
     saveFile <- openFile "test6.txt" WriteMode
     hPrint saveFile (imgDataTobit imgData)
-    putStrLn  (show (head test))
-    --print  (readHuffmanTable (head huffmanTable))
     hPutStrLn saveFile (show (head test))
     hPrint  saveFile (readHuffmanTable (head huffmanTable))
     hPutStrLn saveFile (show (test !! 1))
